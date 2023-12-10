@@ -1,0 +1,23 @@
+name: Manual Deployment Workflow
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  log_on_failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: fail job
+        run: exit(1)
+
+      - name: Log on failure
+        if: failure()
+        uses: ./.github/custom-actions/log_to_elastic
+        with:
+          message: "Deployment of application FAILED (commit ${{ github.sha }})"
+          app: "github-actions-deploy"
+          log_level: "error"
+          elastic_cloud_auth: ${{ secrets.ELASTIC_CLOUD_AUTH }}
