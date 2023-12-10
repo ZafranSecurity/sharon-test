@@ -1,4 +1,4 @@
-name: Manual Deployment Workflow
+name: Test Elastic Log
 
 on: 
   workflow_dispatch:
