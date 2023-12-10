@@ -1,0 +1,36 @@
+name: "Write log message to Elastic"
+description: "Writes a custom log message to our Elastic log cluster"
+inputs:
+  message:
+    description: "The message to write to the log"
+    required: true
+  elastic_cloud_auth:
+    description: "The base64-encoded username:password for the Elastic Cloud API"
+    required: true
+  app:
+    description: "The name of the app that is writing the log message"
+    required: true
+  log_level:
+    description: "The log level to write. Optional, defaults to info"
+    required: false
+    default: "info"
+  is_hotfix:
+    description: "Whether this deployment was run as a hotfix. Defaults to false"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        curl --location 'https://74e06b6d5c3e49a6a269860e4048a4fa.us-east-2.aws.elastic-cloud.com/zafran-logs-8.7.1/_doc' \
+        --header "Authorization: Basic ${{ inputs.elastic_cloud_auth }}" \
+        --header 'Content-Type: application/json' \
+        --data-raw "{
+          \"@timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")\",
+          \"app.app\": \"${{ inputs.app }}\",
+          \"is_hotfix\": \"${{ inputs.is_hotfix }}\",
+          \"level\": \"${{ inputs.log_level }}\",
+          \"message\": \"${{ inputs.message }}\"
+        }"
+      shell: bash
+      name: "Write log message"
