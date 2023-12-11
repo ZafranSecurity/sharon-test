@@ -1,0 +1,109 @@
+fullnameOverride: ""
+nameOverride: ""
+
+github: 
+  user: SharonDiskin
+  token: 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
+  secret: gmfovpurjstkhviiwdijxqjkprdm
+
+orgAllowlist: github.com/ZafranSecurity/*
+
+aws: {}
+
+allowForkPRs: false
+allowDraftPRs: false
+hidePrevPlanComments: false
+hideUnchangedPlanComments: false
+
+image:
+  repository: ghcr.io/runatlantis/atlantis
+  tag: ""
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 4141
+
+statefulSet:
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 100
+    fsGroupChangePolicy: "OnRootMismatch"
+
+ingress:
+  enabled: true
+  path: /*
+  pathType: ImplementationSpecific
+
+resources: {}
+
+atlantisDataDirectory: /atlantis-data
+
+volumeClaim:
+  enabled: true
+  dataStorage: 5Gi
+
+replicaCount: 1
+
+nodeSelector: {}
+tolerations: []  # Set tolerations as an empty array
+affinity: {}
+
+livenessProbe:
+  enabled: true
+  periodSeconds: 60
+  initialDelaySeconds: 5
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
+  scheme: HTTP
+
+readinessProbe:
+  enabled: true
+  periodSeconds: 60
+  initialDelaySeconds: 5
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
+  scheme: HTTP
+
+serviceAccount:
+  create: true
+  mount: true
+  name: null
+
+enableKubernetesBackend: false
+
+googleServiceAccountSecrets: []
+
+extraVolumes: []
+extraVolumeMounts: []
+
+extraManifests: []
+
+initContainers: []
+
+hostNetwork: false
+
+extraArgs: []
+
+extraContainers: []
+
+containerSecurityContext: {}
+
+servicemonitor:
+  enabled: false
+  interval: "30s"
+  path: /metrics
+  auth:
+    basicAuth:
+      enabled: false
+    externalSecret:
+      enabled: false
+
+podMonitor:
+  enabled: false
+  interval: "30s"
+
+lifecycle: {}
