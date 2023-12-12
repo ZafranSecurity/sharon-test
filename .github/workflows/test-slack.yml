@@ -1,0 +1,24 @@
+name: Manual Workflow
+
+on:
+  workflow_dispatch: # This event allows manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Send a slack alert in case deployment failed
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: alerts-test
+          SLACK_COLOR: failure()
+          SLACK_MESSAGE: "service deployment status is: failure()"
+          SLACK_TITLE: "service deployment status is: failure()"
+          SLACK_USERNAME: GitHub Actions
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK_URL }}
+          SLACK_ICON: https://static-00.iconduck.com/assets.00/github-icon-512x500-vnqpw57x.png
