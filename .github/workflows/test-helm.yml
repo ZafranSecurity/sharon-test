@@ -32,6 +32,13 @@ jobs:
       uses: helm/kind-action@v1.1.0
       with:
         cluster_name: 'helm-chart-test-cluster'
+        kubectl_version: v1.27.0
+
+    - name: Install Ambassador CRDs
+      run: kubectl apply -f https://www.getambassador.io/yaml/ambassador/ambassador-crds.yaml
+
+    - name: Install KEDA CRDs
+      run: kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.4.0/keda-2.4.0.yaml
 
     - name: Dry Run Test Helm Charts
       run: |
