@@ -1,0 +1,10 @@
+{{- $baseConfig := dict "timeout_ms" 60000 -}}
+{{ range .Values.ambassadorMappings }}
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  {{ .name | quote }}
+spec: {{ merge .spec $baseConfig | toYaml | replace "$RELEASE_VERSION$" (toString $.Values.releaseVersion) | replace "$RELEASE_VERSION_QUOTED$" (quote $.Values.releaseVersion) | nindent 2 }}
+
+{{ end }}

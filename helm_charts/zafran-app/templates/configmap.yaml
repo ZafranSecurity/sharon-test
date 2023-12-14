@@ -1,0 +1,10 @@
+{{ if .Values.configMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zafran-app.name" . }}
+  labels:
+    {{- include "zafran-app.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.configMap.data | nindent 2 }}
+{{ end }}

@@ -1,0 +1,12 @@
+{{- $baseConfig := dict "timeout_ms" 60000 -}}
+{{ with .Values.ingress }}
+{{ range .ambassadorMappings }}
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: {{ .name }}
+spec: {{ merge .spec $baseConfig | toYaml | nindent 2 }}
+
+{{ end }}
+{{ end }}

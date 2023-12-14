@@ -1,0 +1,16 @@
+common:
+  releaseHash: ""
+
+tykFrontendRoutes:
+  - name: ddd
+    namespace: default
+    use_keyless: true
+    protocol: http
+    active: true
+    proxy_target_url: http://playground.zafran.io.s3-website.us-east-2.amazonaws.com/
+    proxy_listen_path: /
+    url_rewrites:
+      - path: /
+        method: GET
+        match_pattern: "(.*)"
+        rewrite_to: /index.html
