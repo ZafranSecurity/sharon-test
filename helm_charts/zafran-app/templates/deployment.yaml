@@ -1,0 +1,146 @@
+{{- $monitoring := default dict .Values.common.monitoring -}}
+{{- $datadog := default dict $monitoring.datadog -}}
+{{ if .Values.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zafran-app.name" . }}
+  labels:
+    {{- include "zafran-app.labels" . | nindent 4 }}
+    {{- if $datadog.enabled }}
+    {{- include "zafran-app.datadogLabels" . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ default 1 .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "zafran-app.selectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.common.logging }}
+        co.elastic.logs/enabled: {{ default "false" $.Values.common.logging.enabled | quote }}
+        {{- end }}
+        {{- with .Values.deployment.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "zafran-app.selectorLabels" . | nindent 8 }}
+        {{- if $datadog.enabled }}
+        {{- include "zafran-app.datadogLabels" . | nindent 8 }}
+        {{- end }}
+
+    spec:
+      {{- if and .Values.common.iam .Values.common.iam.createServiceAccount }}
+      serviceAccountName: {{ include "zafran-app.serviceAccountName" . }}
+      {{- end }}
+      containers:
+        # Primary app container (required)
+        {{- with .Values.deployment.appContainer }}
+        - name: app
+          image: "{{ .image.repository }}:{{ default "latest" .image.tag }}"
+          {{- if .application.commandOverride }}
+          command:
+            {{- range .application.commandOverride }}
+            - {{ . }}
+            {{- end }}
+          {{- else if .application.runWithDelve }}
+          command:
+            - /go/bin/dlv
+            - --listen=0.0.0.0:12345
+            - --continue
+            - --headless=true
+            - --api-version=2
+            - --accept-multiclient
+            - exec
+            - {{ .application.path -}}
+          {{- else }}
+          command: [ {{ .application.path | quote }} ]
+          {{- end }}
+          imagePullPolicy: {{ default "IfNotPresent" .image.imagePullPolicy }}
+          env:
+            - name: APP_NAME
+              value: {{ default $.Values.common.appName .application.appNameEnvValueOverride }}
+            - name: ENV_NAME
+              value: {{ $.Values.common.envName }}
+            - name: LOG_FORMAT
+              value: {{ (default dict $.Values.common.logging).logFormat }}
+            - name: GIT_SHA
+              value: {{ $.Values.common.gitSha }}
+          {{- toYaml .extraEnv | nindent 12 }}
+          {{- if $datadog.enabled }}
+          {{- include "zafran-app.datadogEnv" $ | nindent 12 -}}
+          {{- end }}
+          ports:
+            - containerPort: {{ default 8000 .application.listenPort }}
+            {{- if .application.runWithDelve }}
+            - containerPort: 12345
+            {{- end }}
+            {{- range .extraContainerPorts }}
+            - containerPort: {{ . }}
+            {{- end }}
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or .volumeMounts (and $datadog.enabled (not $datadog.disableApmSocket)) }}
+          volumeMounts:
+            {{- if .volumeMounts}}
+            {{- toYaml .volumeMounts | nindent 12 }}
+            {{- end }}
+            {{- if and $datadog.enabled (not $datadog.disableApmSocket) }}
+            - mountPath: /var/run/datadog
+              name: apmsocketpath
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if and (.Values.deployment.grpcUiContainer) (.Values.deployment.grpcUiContainer.enabled)}}
+        {{- with .Values.deployment.grpcUiContainer }}
+        # gRPC UI container
+        - name: grpcui
+          {{- if (and .image .image.repository .image.tag) }}
+          image: {{ printf "%s:%s" .image.repository .image.tag }}
+          {{- else }}
+          image: "fullstorydev/grpcui:v1.3.2"
+          {{- end }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          args:
+            - -plaintext
+            - -port
+            - "5000"
+            - -connect-fail-fast=false
+            - -base-path
+            - {{ .basePath }}
+            - {{ printf "localhost:%s" (default 8000 $.Values.deployment.appContainer.application.listenPort | toString) }}
+        {{- end }}
+        {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    {{- include "zafran-app.nodeAffinitySelectors" . | nindent 18 }}
+                topologyKey: topology.kubernetes.io/zone
+      {{- with .Values.deployment.initContainers }}
+      initContainers:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.deployment.volumes (and $datadog.enabled (not $datadog.disableApmSocket)) }}
+      volumes:
+      {{- if .Values.deployment.volumes }}
+      {{- toYaml .Values.deployment.volumes | nindent 8 }}
+      {{- end }}
+      {{- if and $datadog.enabled (not $datadog.disableApmSocket) }}
+        - name: apmsocketpath
+          hostPath:
+            path: /var/run/datadog/
+        {{- end }}
+      {{- end }}
+{{ end }}

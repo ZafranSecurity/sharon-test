@@ -1,0 +1,5 @@
+How to build and push new versions of this Helm chart
+
+1. Update the version in `Chart.yaml`
+2. Run `helm package ./zafran-app`
+3. Run `helm s3 push zafran-app-<version>.tgz zafran-app`

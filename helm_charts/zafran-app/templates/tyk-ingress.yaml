@@ -1,0 +1,28 @@
+{{- with .Values.ingress }}
+{{- range .tykRecords }}
+---
+apiVersion: tyk.tyk.io/v1alpha1
+kind: ApiDefinition
+metadata:
+  name: {{ .name }}
+spec:
+  name: {{ .name }}
+  use_keyless: true
+  protocol: {{ default "http" .protocol }}
+  active: true
+  {{- if .domain }}
+  domain: {{ .domain }}
+  {{- end }}
+  proxy:
+    target_url: {{ .targetUrl }}
+    listen_path: {{ .listenPath }}
+    {{- if hasKey . "preserveHostHeader" }}
+    preserve_host_header: {{ .preserveHostHeader }}
+    {{- else }}
+    preserve_host_header: true
+    {{- end }}
+    {{- if .stripListenPath }}
+    strip_listen_path: {{ .stripListenPath }}
+    {{- end }}
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,104 @@
+{{- $monitoring := default dict .Values.common.monitoring -}}
+{{- $datadog := default dict $monitoring.datadog -}}
+{{ if .Values.cronjob }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "zafran-app.name" . }}
+  labels:
+    {{- include "zafran-app.labels" . | nindent 4 }}
+    {{- if $datadog.enabled }}
+    {{- include "zafran-app.datadogLabels" . | nindent 4 }}
+    {{- end }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  failedJobsHistoryLimit: {{ default 1 .Values.cronjob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ default 0 .Values.cronjob.backoffLimit }}
+      ttlSecondsAfterFinished: {{ default "7200" .Values.cronjob.ttlSecondsAfterFinished }}
+
+      template:
+        metadata:
+          annotations:
+            {{- if .Values.common.logging }}
+            co.elastic.logs/enabled: {{ default "false" $.Values.common.logging.enabled | quote }}
+            {{- end }}
+            {{- with .Values.cronjob.podAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          labels:
+            {{- include "zafran-app.selectorLabels" . | nindent 12 }}
+            {{- if $datadog.enabled }}
+            {{- include "zafran-app.datadogLabels" . | nindent 12 }}
+            {{- end }}
+
+        spec:
+          {{- if and .Values.common.iam .Values.common.iam.createServiceAccount }}
+          serviceAccountName: {{ include "zafran-app.serviceAccountName" . }}
+          {{- end }}
+          containers:
+            # Primary app container (required)
+            {{- with .Values.cronjob.appContainer }}
+            - name: app
+              image: "{{ .image.repository }}:{{ default "latest" .image.tag }}"
+              {{- if .application.commandOverride }}
+              command:
+                {{- range .application.commandOverride }}
+                - {{ . }}
+                {{- end }}
+              {{- else }}
+              command: [ {{ .application.path | quote }} ]
+              {{- end }}
+              imagePullPolicy: {{ default "IfNotPresent" .image.imagePullPolicy }}
+              env:
+                - name: APP_NAME
+                  value: {{ default $.Values.common.appName .application.appNameEnvValueOverride }}
+                - name: ENV_NAME
+                  value: {{ $.Values.common.envName }}
+                - name: LOG_FORMAT
+                  value: {{ (default dict $.Values.common.logging).logFormat }}
+                - name: GIT_SHA
+                  value: {{ $.Values.common.gitSha }}
+              {{- toYaml .extraEnv | nindent 16 }}
+              {{- if $datadog.enabled }}
+              {{- include "zafran-app.datadogEnv" $ | nindent 16 -}}
+              {{- end }}
+              ports:
+                - containerPort: {{ default 8000 .application.listenPort }}
+                {{- range .extraContainerPorts }}
+                - containerPort: {{ . }}
+                {{- end }}
+              {{- with .resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- if or .volumeMounts (and $datadog.enabled (not $datadog.disableApmSocket)) }}
+              volumeMounts:
+                {{- if .volumeMounts}}
+                {{- toYaml .volumeMounts | nindent 16 }}
+                {{- end }}
+                {{- if and $datadog.enabled (not $datadog.disableApmSocket) }}
+                - mountPath: /var/run/datadog
+                  name: apmsocketpath
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- with .Values.cronjob.initContainers }}
+          initContainers:
+              {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.cronjob.volumes (and $datadog.enabled (not $datadog.disableApmSocket)) }}
+          volumes:
+          {{- if .Values.cronjob.volumes }}
+          {{- toYaml .Values.cronjob.volumes | nindent 12 }}
+          {{- end }}
+          {{- if and $datadog.enabled (not $datadog.disableApmSocket) }}
+            - name: apmsocketpath
+              hostPath:
+                path: /var/run/datadog/
+            {{- end }}
+          {{- end }}
+          restartPolicy: Never
+
+{{ end }}

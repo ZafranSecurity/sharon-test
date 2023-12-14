@@ -1,0 +1,66 @@
+{{ if .Values.jobHook }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zafran-app.name" . }}-{{ .Values.jobHook.postfixName }}
+  labels:
+    {{- include "zafran-app.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: {{ default "pre-install,pre-upgrade" .Values.jobHook.helmHookAnnotation }}
+spec:
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.jobHook.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.common.logging }}
+        co.elastic.logs/enabled: {{ default "false" $.Values.common.logging.enabled | quote }}
+        {{- end }}
+      labels:
+        {{- include "zafran-app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if and .Values.common.iam .Values.common.iam.createServiceAccount }}
+      serviceAccountName: {{ include "zafran-app.serviceAccountName" . }}
+      {{- end }}
+      restartPolicy: {{ default "Never" .Values.jobHook.restartPolicy }}
+      containers:
+        # Primary job container (required)
+        {{- with .Values.jobHook }}
+        - name: job
+          image: "{{ .image.repository }}:{{ default "latest" .image.tag }}"
+          {{- with .command }}
+          command:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .args }}
+          args:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          imagePullPolicy: {{ default "IfNotPresent" .image.imagePullPolicy }}
+          env:
+            - name: APP_NAME
+              value: {{ default $.Values.common.appName .appNameEnvValueOverride }}
+            - name: ENV_NAME
+              value: {{ $.Values.common.envName }}
+            - name: LOG_FORMAT
+              value: {{ (default dict $.Values.common.logging).logFormat }}
+            - name: GIT_SHA
+              value: {{ $.Values.common.gitSha }}
+          {{- with .extraEnv }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .volumeMounts }}
+          volumeMounts:
+              {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      {{- with .Values.jobHook.volumes }}
+      volumes:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{ end }}

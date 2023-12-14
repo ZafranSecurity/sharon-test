@@ -1,0 +1,11 @@
+{{- if and .Values.deployment .Values.deployment.autoscaling }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "zafran-app.name" . }}
+spec:
+  minAvailable: {{ default 1 .Values.deployment.autoscaling.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "zafran-app.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,29 @@
+{{- if and .Values.service .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if .Values.service.nameOverride }}
+  name: {{ .Values.service.nameOverride }}
+  {{- else }}
+  name: {{ include "zafran-app.serviceName" . }}
+  {{- end }}
+  labels:
+    {{- include "zafran-app.labels" . | nindent 4 }}
+spec:
+  type: {{ default "ClusterIP" .Values.service.type }}
+  ports:
+    {{- if .Values.service.portsOverride }}
+    {{- toYaml .Values.service.portsOverride | nindent 4 }}
+    {{- else }}
+    - name: grpc
+      port: 8000
+      protocol: TCP
+    {{- if .Values.deployment.grpcUiContainer}}
+    - name: grpcui-http
+      port: 5000
+      protocol: TCP
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "zafran-app.selectorLabels" . | nindent 4 }}
+{{- end }}

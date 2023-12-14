@@ -1,0 +1,29 @@
+{{- if and .Values.deployment .Values.autoscaling }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "zafran-app.name" . }}
+spec:
+  scaleTargetRef:
+    name: {{ include "zafran-app.name" . }}
+  pollingInterval: 20
+  minReplicaCount: {{ default 1 .Values.autoscaling.minReplicas }}
+  maxReplicaCount: {{ default 3 .Values.autoscaling.maxReplicas }}
+  triggers:
+  {{- if eq .Values.autoscaling.type "kafka" }}
+    - type: kafka
+      metadata:
+        {{- $baseConfig := dict "bootstrapServers" "pkc-921jm.us-east-2.aws.confluent.cloud:9092" -}}
+        {{ merge .Values.autoscaling.metadata $baseConfig | toYaml | nindent 8 }}
+      authenticationRef:
+        name: keda-trigger-auth-kafka-credential
+        kind: ClusterTriggerAuthentication
+  {{- end }}
+
+  {{- if eq .Values.autoscaling.type "cpu" }}
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        {{- .Values.autoscaling.metadata | toYaml | nindent 8 }}
+  {{- end }}
+{{ end }}
