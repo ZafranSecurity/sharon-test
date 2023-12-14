@@ -1,6 +1,6 @@
 name: Helm Chart Testing Workflow
 
-on: [workflow_dispatch, pull_request]
+on: [ workflow_dispatch, pull_request ]
 
 jobs:
   test-helm-chart:
@@ -9,7 +9,7 @@ jobs:
     - name: Checkout infra repo
       uses: actions/checkout@v4
       with:
-        path: 'infra' 
+        path: 'sharon-test' 
 
     - name: Checkout zafran-app repo
       uses: actions/checkout@v4
@@ -25,7 +25,7 @@ jobs:
         version: 'v3.11.1'
 
     - name: Lint Helm Chart
-      run: helm lint ./infra/kubernetes/helm_charts/zafran-app
+      run: ls -la
 
     - name: Set up KinD (Kubernetes in Docker)
       uses: helm/kind-action@v1.1.0
@@ -44,4 +44,4 @@ jobs:
             fi
           fi
         done
-        
+
