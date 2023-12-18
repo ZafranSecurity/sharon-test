@@ -38,9 +38,12 @@ jobs:
     - name: Install helm diff plugin
       run: helm plugin install https://github.com/databus23/helm-diff
 
-    - name: Dry Run Test Helm Charts
+    - name: Dry Run Test Helm Charts (zafran-app)
       run: |
         for dir in ./zafran-app/deploy/* ; do
+          if [ "$(basename "$dir")" = "fe" ]; then
+            continue
+          fi
           if [ -f "$dir/helm_values.yaml" ]; then
             echo "==================== Dry run testing Helm Chart for $dir ===================="
             helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "$dir/helm_values.yaml"
@@ -50,3 +53,14 @@ jobs:
             fi                
           fi
         done
+
+    - name: Dry Run Test Helm Charts (zafran-fe)
+      run: |
+          if [ -f "$dir/helm_values.yaml" ]; then
+            echo "==================== Dry run testing Helm Chart for $dir ===================="
+            helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-fe -f "./zafran-app/deploy/fe/helm_values.yaml"
+            if [ $? -ne 0 ]; then
+              echo "Dry run test failed for $dir"
+              exit 1
+            fi                
+          fi
