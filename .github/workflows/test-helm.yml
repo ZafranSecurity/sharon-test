@@ -43,7 +43,7 @@ jobs:
         for dir in ./zafran-app/deploy/* ; do
           if [ -f "$dir/helm_values.yaml" ]; then
             echo "Dry run testing Helm Chart for $dir"
-            helm install --dry-run --debug test-release -f "/$dir/helm_values.yaml"
+            helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "$dir/helm_values.yaml"
             if [ $? -ne 0 ]; then
               echo "Dry run test failed for $dir"
               exit 1
