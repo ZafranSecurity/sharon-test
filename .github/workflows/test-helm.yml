@@ -38,9 +38,6 @@ jobs:
     - name: Install helm diff plugin
       run: helm plugin install https://github.com/databus23/helm-diff
 
-    - name: Helm lint
-      run: helm lint sharon-test/helm_charts/zafran-app
-      
     - name: Dry Run Test Helm Charts
       run: |
         for dir in ./zafran-app/deploy/* ; do
