@@ -28,7 +28,7 @@ jobs:
         path: 'zafran-app' 
 
     - name: Set Context
-      run: kubectl config use-context zafran-prod-k8s
+      run: aws eks --region us-east-2 update-kubeconfig --name zafran-prod-k8s
 
     - name: Set up Helm
       uses: azure/setup-helm@v3
