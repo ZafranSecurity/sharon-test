@@ -40,7 +40,7 @@ jobs:
 
     - name: Dry Run Test Helm Charts
       run: |
-        for dir in ./zafran-app/deploy/*/ ; do
+        for dir in ./zafran-app/deploy/* ; do
           if [ -f "$dir/helm_values.yaml" ]; then
             echo "Dry run testing Helm Chart for $dir"
             helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "./zafran-app/deploy/$dir/helm_values.yaml"
