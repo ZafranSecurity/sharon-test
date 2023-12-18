@@ -12,6 +12,13 @@ jobs:
         ref: ${{ github.head_ref || github.ref }}
         path: 'sharon-test' 
 
+    - uses: aws-actions/configure-aws-credentials@v2
+      name: Configure AWS credentials
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+
     - name: Checkout zafran-app repo
       uses: actions/checkout@v4
       with:
@@ -28,17 +35,8 @@ jobs:
     # - name: Lint Helm Chart
     #   run: helm lint ./sharon-test/helm_charts/zafran-app
 
-    - name: Set up KinD (Kubernetes in Docker)
-      uses: helm/kind-action@v1.1.0
-      with:
-        cluster_name: 'helm-chart-test-cluster'
-        kubectl_version: v1.27.0
-
-    # - name: Install Ambassador CRDs for version 2.0
-    #   run: kubectl apply -f https://www.getambassador.io/yaml/ambassador/ambassador-crds-2.0.yaml
-
-    - name: Install KEDA
-      run: kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.4.0/keda-2.4.0.yaml
+    - name: Switch to Staging Cluster Context
+      run: kubectl config use-context zafran-prod-k8s
 
     - name: Dry Run Test Helm Charts
       run: |
@@ -49,6 +47,6 @@ jobs:
             if [ $? -ne 0 ]; then
               echo "Dry run test failed for $dir"
               exit 1
-            fi
+            fi                
           fi
         done

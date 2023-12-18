@@ -1,0 +1,6 @@
+name: Test and Release Helm Charts
+on: [ workflow_dispatch, pull_request, push ]
+
+jobs:
+  test-helm-chart:
+    uses: ZafranSecurity/zafran-actions/helm-chart-test@main
