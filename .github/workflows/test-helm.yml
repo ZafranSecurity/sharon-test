@@ -35,15 +35,12 @@ jobs:
       with:
         version: 'v3.11.1'
 
-    # - name: Lint Helm Chart
-    #   run: helm lint ./sharon-test/helm_charts/zafran-app
-
     - name: Dry Run Test Helm Charts
       run: |
         for dir in ./zafran-app/deploy/*/ ; do
           if [ -f "$dir/helm_values.yaml" ]; then
             echo "Dry run testing Helm Chart for $dir"
-            helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "./zafran-app/deploy/assets/helm_values.yaml"
+            helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "./zafran-app/deploy/$dir/helm_values.yaml"
             if [ $? -ne 0 ]; then
               echo "Dry run test failed for $dir"
               exit 1
