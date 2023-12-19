@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Check if two arguments are provided
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <helm_chart_path> <helm_values_file_path>"
+# Check if three arguments are provided
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 <chart_name> <helm_chart_path> <helm_values_file_path>"
     exit 1
 fi
 
