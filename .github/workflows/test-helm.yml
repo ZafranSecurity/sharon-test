@@ -52,6 +52,7 @@ jobs:
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
             ${{ env.HELM_SCRIPT_PATH }} zafran-app ${{ env.HELM_CHART_PATH }}/zafran-app $dir/helm_values.yaml 
+          fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
