@@ -1,6 +1,10 @@
 name: Helm Chart Testing Workflow
 
-on: [ workflow_dispatch, pull_request, push ]
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test-helm-chart:
@@ -9,7 +13,7 @@ jobs:
     - name: Set env vars
       run: |
             echo "HELM_CHART_PATH=sharon-test/helm_charts" >> $GITHUB_ENV 
-            echo "HELM_SCRIPT_PATH=sharon-test/.github/scripts/helm_dry_run.sh" >> $GITHUB_ENV
+            echo "HELM_SCRIPT_DIR_PATH=sharon-test/.github/scripts" >> $GITHUB_ENV
             echo "HELM_VALUES_DIR_PATH=zafran-app/deploy" >> $GITHUB_ENV
             echo "HELM_CHART_APP=zafran-app" >> $GITHUB_ENV
             echo "HELM_CHART_FE=zafran-fe" >> $GITHUB_ENV
@@ -49,21 +53,21 @@ jobs:
     - name: Install helm unittest plugin
       run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
 
-    - name: Dry Run chart and check diff (zafran-app)
+    - name: Check diff with old release (zafran-app)
       run: |
         for dir in ${{ env.HELM_VALUES_DIR_PATH }}/* ; do
           if [ "$(basename "$dir")" = "fe" ]; then
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_APP }} $dir/helm_values.yaml 
+            ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_diff.sh ${{ env.HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_APP }} $dir/helm_values.yaml 
           fi
         done
 
-    - name: Dry Run chart and check diff (zafran-fe)
+    - name: Check diff with old release (zafran-fe)
       run: |
         if [ -f "${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
-          ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
+          ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_diff.sh ${{ env.HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
         fi
 
     - name: Execute Helm Unit Tests (Zafran-app)
@@ -73,3 +77,20 @@ jobs:
     - name: Execute Helm Unit Tests (Zafran-app)
       run: |
         helm unittest ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_FE }}
+
+    - name: Dry Run chart(zafran-app)
+      run: |
+        for dir in ${{ env.HELM_VALUES_DIR_PATH }}/* ; do
+          if [ "$(basename "$dir")" = "fe" ]; then
+            continue
+          fi
+          if [ -f "$dir/helm_values.yaml" ]; then
+            ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ env.HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_APP }} $dir/helm_values.yaml 
+          fi
+        done
+
+    - name: Dry Run chart (zafran-fe)
+      run: |
+        if [ -f "${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
+          ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ env.HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
+        fi
