@@ -7,7 +7,7 @@ on:
 
 jobs:
   dry-run-helm-chart:
-    uses: ZafranSecurity/sharon-test/dry-run-helm.yml@main
+    uses: ZafranSecurity/sharon-test/.github/workflows/dry-run-helm.yml@main
   
   release-helm-chart:
     runs-on: ubuntu-latest

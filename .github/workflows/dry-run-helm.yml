@@ -1,0 +1,46 @@
+name: Helm Chart Dry run
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  check-diff-and-test-helm-chart:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set env vars
+      run: |
+            echo "HELM_CHART_PATH=sharon-test/helm_charts" >> $GITHUB_ENV 
+            echo "HELM_SCRIPT_DIR_PATH=sharon-test/.github/scripts" >> $GITHUB_ENV
+            echo "HELM_VALUES_DIR_PATH=zafran-app/deploy" >> $GITHUB_ENV
+            echo "HELM_CHART_APP=zafran-app" >> $GITHUB_ENV
+            echo "HELM_CHART_FE=zafran-fe" >> $GITHUB_ENV
+
+    - name: Set Context
+      run: aws eks --region us-east-2 update-kubeconfig --name zafran-prod-k8s
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.11.1'
+
+    - name: Dry Run chart(zafran-app)
+      run: |
+        for dir in ${{ env.HELM_VALUES_DIR_PATH }}/* ; do
+          if [ "$(basename "$dir")" = "fe" ]; then
+            continue
+          fi
+          if [ -f "$dir/helm_values.yaml" ]; then
+            ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ env.HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_APP }} $dir/helm_values.yaml 
+          fi
+        done
+
+    - name: Dry Run chart (zafran-fe)
+      run: |
+        if [ -f "${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
+          ${{ env.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ env.HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${{ env.HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
+        fi
