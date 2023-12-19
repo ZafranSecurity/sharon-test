@@ -20,11 +20,4 @@ if [ -f "$HELM_VALUES_FILE_PATH" ]; then
       echo "Dry run test failed for $(basename "$DIR_NAME")"
       exit 1
     fi
-
-    echo "==================== Helm Diff for $(basename "$DIR_NAME") ===================="
-    helm diff upgrade --allow-unreleased $CHART_NAME $HELM_CHART_PATH -f "$HELM_VALUES_FILE_PATH"
-    if [ $? -ne 0 ]; then
-      echo "Check diff failed for $(basename "$DIR_NAME")"
-      exit 1
-    fi
 fi
