@@ -10,7 +10,7 @@ jobs:
       run: |
             echo "HELM_CHART_PATH=sharon-test/helm_charts" >> GITHUB_ENV
             echo "HELM_SCRIPT_PATH=sharon-test/.github/scripts/helm_dry_run.sh" >> GITHUB_ENV 
-            ECHO "HELM_VALUES_PATH=zafran-app/deploy" >> GITHUB_ENV
+            echo "HELM_VALUES_PATH=zafran-app/deploy" >> GITHUB_ENV
 
     - name: Checkout infra repo
       uses: actions/checkout@v4
