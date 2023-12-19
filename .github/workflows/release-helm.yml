@@ -6,11 +6,12 @@ on:
       - main
 
 jobs:
-  # test-helm-chart:
-  #   uses: ZafranSecurity/sharon-test/test-helm.yml@main
+  dry-run-helm-chart:
+    uses: ZafranSecurity/sharon-test/dry-run-helm.yml@main
   
   release-helm-chart:
     runs-on: ubuntu-latest
+    needs: dry-run-helm-chart
     steps:
       - uses: aws-actions/configure-aws-credentials@v2
         name: Configure AWS credentials
