@@ -56,7 +56,7 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ${{ env.HELM_SCRIPT_PATH }} ${( HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_FE }}$dir/helm_values.yaml 
+            ${{ env.HELM_SCRIPT_PATH }} ${( HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_APP }} $dir/helm_values.yaml 
           fi
         done
 
