@@ -8,9 +8,9 @@ jobs:
     steps:
     - name: Set env vars
       run: |
-            echo "HELM_CHART_PATH=sharon-test/helm_charts" >> GITHUB_ENV
-            echo "HELM_SCRIPT_PATH=sharon-test/.github/scripts/helm_dry_run.sh" >> GITHUB_ENV 
-            echo "HELM_VALUES_PATH=zafran-app/deploy" >> GITHUB_ENV
+            echo "HELM_CHART_PATH=sharon-test/helm_charts" >> ${{ GITHUB_ENV }} 
+            echo "HELM_SCRIPT_PATH=sharon-test/.github/scripts/helm_dry_run.sh" >> ${{ GITHUB_ENV }} 
+            echo "HELM_VALUES_PATH=zafran-app/deploy" >> ${{ GITHUB_ENV }} 
 
     - name: Checkout infra repo
       uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml" ]; then
-          ${{ env.HELM_SCRIPT_PATH }} sharon-test/helm_charts/zafran-fe {{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml
+          ${{ env.HELM_SCRIPT_PATH }} sharon-test/helm_charts/zafran-fe ${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml
         fi
 
 
