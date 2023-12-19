@@ -21,7 +21,7 @@ jobs:
         path: 'zafran-app' 
 
     - name: ls .github
-      run: cd sharon-test/.github/workflows ; ls -la ../scripts
+      run: cd sharon-test/.github/workflows ; chmod +x ../scripts/helm_dry_run.sh
 
     - uses: aws-actions/configure-aws-credentials@v2
       name: Configure AWS credentials
