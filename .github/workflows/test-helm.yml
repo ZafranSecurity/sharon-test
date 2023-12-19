@@ -20,9 +20,6 @@ jobs:
         ref: 'main'
         path: 'zafran-app' 
 
-    - name: ls .github
-      run: ls sharon-test/.github/scripts
-
     - uses: aws-actions/configure-aws-credentials@v2
       name: Configure AWS credentials
       with:
@@ -43,19 +40,19 @@ jobs:
 
     - name: Dry Run chart and check diff (zafran-app)
       run: |
-        for dir in ./zafran-app/deploy/* ; do
+        for dir in zafran-app/deploy/* ; do
           if [ "$(basename "$dir")" = "fe" ]; then
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
+            sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app $dir/helm_values.yaml
           fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "./zafran-app/deploy/fe/helm_values.yaml" ]; then
-          sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe "./zafran-app/deploy/fe/helm_values.yaml"
+          sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe zafran-app/deploy/fe/helm_values.yaml
         fi
 
 
