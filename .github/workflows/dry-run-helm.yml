@@ -1,6 +1,9 @@
 name: Helm Chart Dry run
 on:
   workflow_call:
+    secrets:
+      GH_PAT:
+        required: true
   workflow_dispatch:
   pull_request:
     branches:

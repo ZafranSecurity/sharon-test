@@ -8,7 +8,9 @@ on:
 jobs:
   dry-run-helm-chart:
     uses: ZafranSecurity/sharon-test/.github/workflows/dry-run-helm.yml@main
-  
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
+      
   release-helm-chart:
     runs-on: ubuntu-latest
     needs: dry-run-helm-chart
