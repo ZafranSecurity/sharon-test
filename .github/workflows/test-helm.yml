@@ -21,7 +21,7 @@ jobs:
         path: 'zafran-app' 
 
     - name: ls .github
-      run: ls sharon-test
+      run: ls sharon-test/.github/scripts
 
     - uses: aws-actions/configure-aws-credentials@v2
       name: Configure AWS credentials
@@ -48,14 +48,14 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ./sharon-test/.gituhb/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
+            sharon-test/.gituhb/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
           fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "./zafran-app/deploy/fe/helm_values.yaml" ]; then
-          ./sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe "./zafran-app/deploy/fe/helm_values.yaml"
+          sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe "./zafran-app/deploy/fe/helm_values.yaml"
         fi
 
 
