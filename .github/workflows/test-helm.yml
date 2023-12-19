@@ -48,14 +48,14 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            sharon-test/workflows/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
+            ./sharon-test/workflows/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
           fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "./zafran-app/deploy/fe/helm_values.yaml" ]; then
-          sharon-test/workflows/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe "./zafran-app/deploy/fe/helm_values.yaml"
+          ./sharon-test/workflows/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-fe "./zafran-app/deploy/fe/helm_values.yaml"
         fi
 
 
