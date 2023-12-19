@@ -48,7 +48,7 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            sharon-test/.gituhb/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
+            sharon-test/.github/scripts/helm_dry_run.sh sharon-test/helm_charts/zafran-app "$dir/helm_values.yaml"
           fi
         done
 
