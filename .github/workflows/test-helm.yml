@@ -56,20 +56,20 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ${{ env.HELM_SCRIPT_PATH }} ${( HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_APP }} $dir/helm_values.yaml 
+            ${{ env.HELM_SCRIPT_PATH }} ${( env.HELM_CHART_APP }} ${{ env.HELM_CHART_PATH }}/${( env.HELM_CHART_APP }} $dir/helm_values.yaml 
           fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
-          ${{ env.HELM_SCRIPT_PATH }} ${( HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
+          ${{ env.HELM_SCRIPT_PATH }} ${( env.HELM_CHART_FE }} ${{ env.HELM_CHART_PATH }}/${( env.HELM_CHART_FE }} ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
         fi
 
     - name: Execute Helm Unit Tests (Zafran-app)
       run: |
-        helm unittest ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_APP }}
+        helm unittest ${{ env.HELM_CHART_PATH }}/${( env.HELM_CHART_APP }}
 
     - name: Execute Helm Unit Tests (Zafran-app)
       run: |
-        helm unittest ${{ env.HELM_CHART_PATH }}/${( HELM_CHART_FE }}
+        helm unittest ${{ env.HELM_CHART_PATH }}/${( env.HELM_CHART_FE }}
