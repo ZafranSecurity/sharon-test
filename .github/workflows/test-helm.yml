@@ -51,14 +51,14 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ${{ env.HELM_SCRIPT_PATH }} sharon-test/helm_charts/zafran-app $dir/helm_values.yaml
+            ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_PATH }}/zafran-app $dir/helm_values.yaml
           fi
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
         if [ -f "${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml" ]; then
-          ${{ env.HELM_SCRIPT_PATH }} sharon-test/helm_charts/zafran-fe ${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml
+          ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_PATH }}/zafran-fe ${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml
         fi
 
 
