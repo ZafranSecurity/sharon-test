@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  check-diff-and-test-helm-chart:
+  dry-run-helm-chart:
     runs-on: ubuntu-latest
     steps:
     - name: Set env vars
@@ -20,6 +20,27 @@ jobs:
             echo "HELM_VALUES_DIR_PATH=zafran-app/deploy" >> $GITHUB_ENV
             echo "HELM_CHART_APP=zafran-app" >> $GITHUB_ENV
             echo "HELM_CHART_FE=zafran-fe" >> $GITHUB_ENV
+
+    - name: Checkout infra repo
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref || github.ref }}
+        path: 'sharon-test' 
+
+    - name: Checkout zafran-app repo
+      uses: actions/checkout@v4
+      with:
+        repository: 'ZafranSecurity/zafran-app'
+        token: ${{ secrets.GH_PAT }}
+        ref: 'main'
+        path: 'zafran-app' 
+
+    - uses: aws-actions/configure-aws-credentials@v2
+      name: Configure AWS credentials
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
 
     - name: Set Context
       run: aws eks --region us-east-2 update-kubeconfig --name zafran-prod-k8s
