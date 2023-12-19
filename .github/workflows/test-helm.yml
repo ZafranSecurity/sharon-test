@@ -12,13 +12,6 @@ jobs:
         ref: ${{ github.head_ref || github.ref }}
         path: 'sharon-test' 
 
-    - uses: aws-actions/configure-aws-credentials@v2
-      name: Configure AWS credentials
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
-
     - name: Checkout zafran-app repo
       uses: actions/checkout@v4
       with:
@@ -26,6 +19,16 @@ jobs:
         token: ${{ secrets.GH_PAT }}
         ref: 'main'
         path: 'zafran-app' 
+
+    - name: ls .github
+      run: cd sharon-test/.github/workflows ; ls -la ../scripts
+
+    - uses: aws-actions/configure-aws-credentials@v2
+      name: Configure AWS credentials
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
 
     - name: Set Context
       run: aws eks --region us-east-2 update-kubeconfig --name zafran-prod-k8s
