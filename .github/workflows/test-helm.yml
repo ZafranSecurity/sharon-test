@@ -47,7 +47,7 @@ jobs:
       run: helm plugin install https://github.com/databus23/helm-diff
 
     - name: Install helm unittest plugin
-      run: $ helm plugin install https://github.com/helm-unittest/helm-unittest.git
+      run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
 
     - name: Dry Run chart and check diff (zafran-app)
       run: |
