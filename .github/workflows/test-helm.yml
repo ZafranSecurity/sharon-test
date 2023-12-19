@@ -45,7 +45,7 @@ jobs:
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            echo "==================== Dry run testing Helm Chart for $(basename "$dir") ===================="
+            echo "==================== Dry run Helm Chart with $(basename "$dir") values ===================="
             helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-app -f "$dir/helm_values.yaml"
             if [ $? -ne 0 ]; then
               echo "Dry run test failed for $dir"
@@ -59,13 +59,13 @@ jobs:
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
           if [ -f "./zafran-app/deploy/fe/helm_values.yaml" ]; then
-            echo "==================== Dry run testing Helm Chart for $dir ===================="
+            echo "==================== Dry run  Helm Chart with fe values ===================="
             helm install --dry-run --debug test-release sharon-test/helm_charts/zafran-fe -f "./zafran-app/deploy/fe/helm_values.yaml"
             if [ $? -ne 0 ]; then
               echo "Dry run test failed for $dir"
               exit 1
             fi    
-            echo "==================== Helm Diff for  ===================="
+            echo "==================== Helm Diff for fe values ===================="
             helm diff upgrade --allow-unreleased test-release sharon-test/helm_charts/zafran-fe -f "./zafran-app/deploy/fe/helm_values.yaml"            
           fi
 
