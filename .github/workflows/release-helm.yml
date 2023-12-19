@@ -10,7 +10,7 @@ jobs:
     uses: ZafranSecurity/sharon-test/.github/workflows/dry-run-helm.yml@main
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   release-helm-chart:
