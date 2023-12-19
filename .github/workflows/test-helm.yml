@@ -10,7 +10,7 @@ jobs:
       run: |
             echo "HELM_CHART_PATH=sharon-test/helm_charts" >> $GITHUB_ENV 
             echo "HELM_SCRIPT_PATH=sharon-test/.github/scripts/helm_dry_run.sh" >> $GITHUB_ENV
-            echo "HELM_VALUES_PATH=zafran-app/deploy" >> $GITHUB_ENV
+            echo "HELM_VALUES_DIR_PATH=zafran-app/deploy" >> $GITHUB_ENV
 
     - name: Checkout infra repo
       uses: actions/checkout@v4
@@ -46,19 +46,24 @@ jobs:
 
     - name: Dry Run chart and check diff (zafran-app)
       run: |
-        for dir in ${{ env.HELM_VALUES_PATH }}/* ; do
+        for dir in ${{ env.HELM_VALUES_DIR_PATH }}/* ; do
           if [ "$(basename "$dir")" = "fe" ]; then
             continue
           fi
           if [ -f "$dir/helm_values.yaml" ]; then
-            ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_PATH }}/zafran-app $dir/helm_values.yaml
-          fi
+            ${{ env.HELM_SCRIPT_PATH }} zafran-app ${{ env.HELM_CHART_PATH }}/zafran-app $dir/helm_values.yaml 
         done
 
     - name: Dry Run chart and check diff (zafran-fe)
       run: |
-        if [ -f "${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml" ]; then
-          ${{ env.HELM_SCRIPT_PATH }} ${{ env.HELM_CHART_PATH }}/zafran-fe ${{ env.HELM_VALUES_PATH }}/fe/helm_values.yaml
+        if [ -f "${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
+          ${{ env.HELM_SCRIPT_PATH }} zafran-fe ${{ env.HELM_CHART_PATH }}/zafran-fe ${{ env.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
         fi
 
+    - name: Run Helm Unit Tests (zafran-app)
+      run: |
+        helm test zafran-app --namespace default
 
+    - name: Run Helm Unit Tests (zafran-fe)
+      run: |
+        helm test zafran-fe --namespace deafult
