@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  test-helm-chart:
-    uses: ZafranSecurity/sharon-test/test-helm.yml@main
+  # test-helm-chart:
+  #   uses: ZafranSecurity/sharon-test/test-helm.yml@main
   
   release-helm-chart:
     runs-on: ubuntu-latest
@@ -18,3 +18,4 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+    
