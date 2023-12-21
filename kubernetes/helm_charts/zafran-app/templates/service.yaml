@@ -27,3 +27,4 @@ spec:
   selector:
     {{- include "zafran-app.selectorLabels" . | nindent 4 }}
 {{- end }}
+
