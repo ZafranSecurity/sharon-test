@@ -1,0 +1,81 @@
+name: Helm Chart Dry run
+on:
+  workflow_call:
+    secrets:
+      GH_PAT:
+        required: true
+      AWS_ACCESS_KEY:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  dry-run-helm-chart:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sharon-test repo
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref || github.ref }}
+        path: 'sharon-test' 
+        fetch-depth: 0
+
+    - name: Checkout zafran-app repo
+      uses: actions/checkout@v4
+      with:
+        repository: 'ZafranSecurity/zafran-app'
+        token: ${{ secrets.GH_PAT }}
+        ref: 'main'
+        path: 'zafran-app' 
+
+    - uses: aws-actions/configure-aws-credentials@v2
+      name: Configure AWS credentials
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+
+    - name: Set Context
+      run: aws eks --region us-east-2 update-kubeconfig --name zafran-prod-k8s
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.11.1'
+
+    - name: Zafran-app | Check for changes in a path
+      uses: ./sharon-test/.github/actions/check-changes-in-path  
+      id: check-zafran-app-path
+      with:
+        path: 'kubernetes/helm_charts/zafran-app/'
+        checkout_to_repo: 'sharon-test'
+
+    - name: Zafran-fe | Check for changes in a path
+      uses: ./sharon-test/.github/actions/check-changes-in-path  
+      id: check-zafran-fe-path
+      with:
+        path: 'kubernetes/helm_charts/zafran-fe/'
+        checkout_to_repo: 'sharon-test'
+
+    - name: Zafran-app | Dry Run chart
+      if: github.event_name == 'workflow_disptach' || steps.check-zafran-app-path.outputs.changed == 'true'
+      run: |
+        for dir in ${{ vars.HELM_VALUES_DIR_PATH }}/* ; do
+          if [ "$(basename "$dir")" = "fe" ]; then
+            continue
+          fi
+          if [ -f "$dir/helm_values.yaml" ]; then
+            ${{ vars.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ vars.HELM_CHART_APP }} ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_APP }} $dir/helm_values.yaml 
+          fi
+        done
+
+    - name: Zafran-fe | Dry Run chart 
+      if: github.event_name == 'workflow_disptach' || steps.check-zafran-fe-path.outputs.changed == 'true'
+      run: |
+        if [ -f "${{ vars.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml" ]; then
+          ${{ vars.HELM_SCRIPT_DIR_PATH }}/helm_dry_run.sh ${{ vars.HELM_CHART_FE }} ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }} ${{ vars.HELM_VALUES_DIR_PATH }}/fe/helm_values.yaml
+        fi

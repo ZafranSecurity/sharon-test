@@ -1,0 +1,30 @@
+name: 'Check Changes in Path'
+description: 'Check for changes in a specific path'
+inputs:
+  path:
+    description: 'Path to check for changes'
+    required: true
+  checkout_to_repo:
+    description: 'Repository name to change directory to, if provided'
+    required: false
+    default: ''
+outputs:
+  changed:
+    description: 'Whether changes were detected'
+    value: ${{ steps.check-for-changes-in-path.outputs.changed }}
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        if [ -n "${{ inputs.checkout_to_repo }}" ]; then
+          cd "${{ inputs.checkout_to_repo }}"
+        fi
+        if git diff --quiet origin/main...HEAD -- ${{ inputs.path }}; then
+          echo "No changes in ${{ inputs.path }}"
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected in ${{ inputs.path }}"
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+      id: check-for-changes-in-path
+      shell: bash
