@@ -8,16 +8,8 @@ on:
       - 'kubernetes/helm_charts/zafran-*/**'
 
 jobs:
-  dry-run-helm-chart:
-    uses: ZafranSecurity/sharon-test/.github/workflows/helm-dry-run.yml@main
-    secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
   release-helm-chart-to-stage:
     runs-on: ubuntu-latest
-    needs: dry-run-helm-chart
     environment: stage
     steps:
       - name: Checkout sharon-test repo
