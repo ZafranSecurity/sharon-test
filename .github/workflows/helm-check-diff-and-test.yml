@@ -1,4 +1,4 @@
-
+name: Check diff and test helm chart
 
 on:
   workflow_dispatch:
