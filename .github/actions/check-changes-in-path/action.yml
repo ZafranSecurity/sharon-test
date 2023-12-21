@@ -19,7 +19,18 @@ runs:
         if [ -n "${{ inputs.checkout_to_repo }}" ]; then
           cd "${{ inputs.checkout_to_repo }}"
         fi
-        if git diff --quiet origin/main...HEAD -- ${{ inputs.path }}; then
+
+        # Determine the base commit for comparison
+        if [ "${GITHUB_REF##*/}" = "main" ]; then
+          # When on main, compare with the previous state of main
+          BASE_COMMIT="HEAD^"
+        else
+          # Otherwise, compare with the main branch
+          BASE_COMMIT="origin/main"
+        fi
+
+        # Perform the diff check
+        if git diff --quiet $BASE_COMMIT...HEAD -- ${{ inputs.path }}; then
           echo "No changes in ${{ inputs.path }}"
           echo "changed=false" >> $GITHUB_OUTPUT
         else
