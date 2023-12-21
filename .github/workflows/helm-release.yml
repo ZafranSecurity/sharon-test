@@ -9,7 +9,7 @@ on:
 
 jobs:
   dry-run-helm-chart:
-    uses: ZafranSecurity/sharon-test/.github/workflows/helm-dry-run.yml@sharon/helm-workflows
+    uses: ZafranSecurity/sharon-test/.github/workflows/helm-dry-run.yml@main
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
