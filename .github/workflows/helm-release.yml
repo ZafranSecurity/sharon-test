@@ -25,7 +25,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: test
-        run: echo "print vars - ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }} "
+        run: echo "${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }} "
         
       - name: Zafran-app | Check for changes in a path
         uses: ./sharon-test/.github/actions/check-changes-in-path  
