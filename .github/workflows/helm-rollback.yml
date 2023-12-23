@@ -1,0 +1,58 @@
+name: Helm rollback
+on:
+  workflow_dispatch:
+    inputs:
+      chart_to_rollback:
+        description: 'Name of the helm chart to rollback'
+        type: choice
+        options: ['zafran-fe', 'zafran-app']
+        default: zafran-app
+        required: true
+      environment:
+        description: 'Rollback Environment'
+        type: choice
+        options: ['stage', 'prod']
+        default: 'stage'
+        required: true
+
+jobs:
+  helm-rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+        with:
+          path: 'infra'  
+          fetch-depth: 0
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        name: Configure AWS credentials
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Install Helm S3 Plugin
+        run: helm plugin install https://github.com/hypnoglow/helm-s3.git
+        shell: bash
+
+      - name: Add Helm S3 Repository
+        run: helm repo add ${{ inputs.chart_to_rollback }}-repo s3://${{ vars.HELM_BUCKET }}/stable/${{ inputs.chart_to_rollback }}
+        shell: bash
+
+      - name: Find Latest Helm Chart Version
+        run: |
+            BUCKET_NAME="${{ vars.HELM_BUCKET }}"
+            CHART_NAME="${{ inputs.chart_to_rollback }}"
+            aws s3 cp s3://$BUCKET_NAME/stable/$CHART_NAME/index.yaml index.yaml
+            LATEST_VERSION=$(yq e '.entries."'$CHART_NAME'"[0].version' index.yaml)
+            echo "Latest Version: $LATEST_VERSION"
+            echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Delete latest chart version from s3
+        run: helm s3 delete ${{ inputs.chart_to_rollback }} --version $LATEST_VERSION ${{ inputs.chart_to_rollback }}-repo
+        shell: bash
+        env:
+          LATEST_VERSION: ${{ env.LATEST_VERSION }}
