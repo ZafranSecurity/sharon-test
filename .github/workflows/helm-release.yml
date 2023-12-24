@@ -31,5 +31,5 @@ jobs:
       - name: Zafran-app | Bump chart version
         uses: ./sharon-test/.github/actions/bump-chart-version
         with:
-          chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_APP }}
+          chart-path: sharon-test/kubernetes/helm_charts/zafran-app
   
