@@ -29,7 +29,6 @@ jobs:
       
           
       - name: Zafran-app | Bump chart version
-        if: github.event_name == 'push' && steps.check-zafran-app-path.outputs.changed == 'true'
         uses: ./sharon-test/.github/actions/bump-chart-version
         with:
           chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_APP }}
