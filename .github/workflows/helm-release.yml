@@ -26,46 +26,11 @@ jobs:
           aws-region: us-east-2
       - name: test
         run: echo "${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }} "
-        
-      - name: Zafran-app | Check for changes in a path
-        uses: ./sharon-test/.github/actions/check-changes-in-path  
-        id: check-zafran-app-path
-        with:
-          path: 'kubernetes/helm_charts/zafran-app/'
-          checkout_to_repo: 'sharon-test'
-
-      - name: Zafran-fe | Check for changes in a path
-        uses: ./sharon-test/.github/actions/check-changes-in-path  
-        id: check-zafran-fe-path
-        with:
-          path: 'kubernetes/helm_charts/zafran-fe/'
-          checkout_to_repo: 'sharon-test'
+      
           
       - name: Zafran-app | Bump chart version
         if: github.event_name == 'push' && steps.check-zafran-app-path.outputs.changed == 'true'
         uses: ./sharon-test/.github/actions/bump-chart-version
         with:
           chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_APP }}
-
-      - name: Zafran-app | Release Helm Chart
-        if: steps.check-zafran-app-path.outputs.changed == 'true'
-        uses: ./sharon-test/.github/actions/helm-chart-release
-        with:
-          chart-name: ${{ vars.HELM_CHART_APP }}
-          chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_APP }}
-          s3-bucket: ${{ vars.HELM_BUCKET }}
-
-      - name: Zafran-fe | Bump chart version
-        if: github.event_name == 'push' && steps.check-zafran-fe-path.outputs.changed == 'true'
-        uses: ./sharon-test/.github/actions/bump-chart-version
-        with:
-          chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }}
-
-      - name: Zafran-fe |  Release Helm Chart 
-        if: steps.check-zafran-fe-path.outputs.changed == 'true'
-        uses: ./sharon-test/.github/actions/helm-chart-release
-        with:
-          chart-name: ${{ vars.HELM_CHART_FE }}
-          chart-path: ${{ vars.HELM_CHART_PATH }}/${{ vars.HELM_CHART_FE }}
-          s3-bucket: ${{ vars.HELM_BUCKET }}
   
